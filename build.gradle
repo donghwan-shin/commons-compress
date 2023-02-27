@@ -71,3 +71,14 @@ tasks.withType(JavaCompile) {
 tasks.withType(Javadoc) {
     options.encoding = 'iso-8859-1'
 }
+
+tasks.register('fatJar', Jar) { // need to run `gradle fatJar -x test`
+    archiveClassifier = 'jar-with-dependencies'
+
+    from sourceSets.main.output
+
+    dependsOn configurations.runtimeClasspath
+    from {
+        configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
+    }
+}
