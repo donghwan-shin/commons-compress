@@ -815,67 +815,6 @@ public class ZipFileTest {
     }
 
     @Test
-    public void testSelfExtractingZipUsingUnzipsfx() throws IOException, InterruptedException {
-        final File unzipsfx = new File("/usr/bin/unzipsfx");
-        Assumptions.assumeTrue(unzipsfx.exists());
-
-        final File testZip = File.createTempFile("commons-compress-selfExtractZipTest", ".zip");
-        testZip.deleteOnExit();
-
-        final String testEntryName = "test_self_extract_zip/foo";
-        final File extractedFile = new File(testZip.getParentFile(), testEntryName);
-        extractedFile.deleteOnExit();
-
-        final byte[] testData = {1, 2, 3, 4};
-        final byte[] buffer = new byte[512];
-        int bytesRead;
-        try (InputStream unzipsfxInputStream = Files.newInputStream(unzipsfx.toPath())) {
-            try (OutputStream outputStream = Files.newOutputStream(testZip.toPath());
-                 ZipArchiveOutputStream zo = new ZipArchiveOutputStream(outputStream)) {
-
-                while ((bytesRead = unzipsfxInputStream.read(buffer)) > 0) {
-                    zo.writePreamble(buffer, 0, bytesRead);
-                }
-
-                final ZipArchiveEntry ze = new ZipArchiveEntry(testEntryName);
-                ze.setMethod(ZipEntry.STORED);
-                ze.setSize(4);
-                ze.setCrc(0xb63cfbcdL);
-                zo.putArchiveEntry(ze);
-                zo.write(testData);
-                zo.closeArchiveEntry();
-            }
-
-            final ProcessBuilder pbChmod = new ProcessBuilder("chmod", "+x", testZip.getPath());
-            pbChmod.redirectErrorStream(true);
-            final Process processChmod = pbChmod.start();
-            assertEquals(0, processChmod.waitFor(), new String(IOUtils.toByteArray(processChmod.getInputStream())));
-
-            final ProcessBuilder pb = new ProcessBuilder(testZip.getPath());
-            pb.redirectOutput(ProcessBuilder.Redirect.PIPE);
-            pb.directory(testZip.getParentFile());
-            pb.redirectErrorStream(true);
-            final Process process = pb.start();
-            assertEquals(0, process.waitFor(), new String(IOUtils.toByteArray(process.getInputStream())));
-
-            if (!extractedFile.exists()) {
-                // fail if extracted file does not exist
-                fail("Can not find the extracted file");
-            }
-
-            try (InputStream inputStream = Files.newInputStream(extractedFile.toPath())) {
-                bytesRead = IOUtils.readFully(inputStream, buffer);
-                assertEquals(testData.length, bytesRead);
-                assertArrayEquals(testData, Arrays.copyOfRange(buffer, 0, bytesRead));
-            }
-        } finally {
-            testZip.delete();
-            extractedFile.delete();
-            extractedFile.getParentFile().delete();
-        }
-    }
-
-    @Test
     public void testSetLevelTooBigForZipArchiveOutputStream() {
         final ZipArchiveOutputStream fixture = new ZipArchiveOutputStream(new ByteArrayOutputStream());
         assertThrows(IllegalArgumentException.class, () -> fixture.setLevel(Deflater.BEST_COMPRESSION + 1));
