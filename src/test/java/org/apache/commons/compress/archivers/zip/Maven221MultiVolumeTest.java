@@ -49,8 +49,6 @@ public class Maven221MultiVolumeTest {
         // @formatter:off
         "apache-maven-2.2.1/",
         "apache-maven-2.2.1/LICENSE.txt",
-        "apache-maven-2.2.1/NOTICE.txt",
-        "apache-maven-2.2.1/README.txt",
         "apache-maven-2.2.1/bin/",
         "apache-maven-2.2.1/bin/m2.conf",
         "apache-maven-2.2.1/bin/mvn",
